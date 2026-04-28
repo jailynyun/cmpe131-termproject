@@ -29,6 +29,7 @@ class Booking(Base):
     user = relationship("User", back_populates="bookings")
     hotel_reservations = relationship("HotelReservation", back_populates="booking", cascade="all, delete-orphan")
     flight_reservations = relationship("FlightReservation", back_populates="booking", cascade="all, delete-orphan")
+    activity_reservations = relationship("ActivityReservation", back_populates="booking", cascade="all, delete-orphan")
 
 
 class HotelReservation(Base):
@@ -60,4 +61,16 @@ class FlightReservation(Base):
     Destination_Airport_Code = Column(String, nullable=False)
 
     booking = relationship("Booking", back_populates="flight_reservations")
+
+
+class ActivityReservation(Base):
+    __tablename__ = "activity_reservations"
+    Activity_Reservation_Id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    Booking_Id = Column(Integer, ForeignKey("bookings.Booking_Id"), nullable=False)
+    Activity_Name = Column(String, nullable=False)
+    Location = Column(String, nullable=True)
+    Activity_Date = Column(Date, nullable=False)
+    Price = Column(Float, nullable=True)
+
+    booking = relationship("Booking", back_populates="activity_reservations")
 
