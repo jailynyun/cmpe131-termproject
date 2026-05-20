@@ -42,7 +42,7 @@ class HotelReservation(Base):
     Check_Out_Date = Column(Date, nullable=False)
     Check_Out_Time = Column(String, nullable=True)
     Rate = Column(Float, nullable=True)
-
+    Special_Request = Column(String(500), nullable=True)
     booking = relationship("Booking", back_populates="hotel_reservations")
 
 

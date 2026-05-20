@@ -100,6 +100,7 @@ CREATE TABLE Hotel_Reservations (
     Check_Out_Date TEXT NOT NULL,
     Check_Out_Time TEXT,
     Rate REAL, -- Crucially, the rate charged for THIS specific stay
+    Special_Request TEXT CHECK (length(Special_Request) <= 500),
 
     FOREIGN KEY (Booking_Id) REFERENCES Bookings(Booking_Id),
     FOREIGN KEY (Hotel_Code) REFERENCES Hotel_Master(Hotel_Code)

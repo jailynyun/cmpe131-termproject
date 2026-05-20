@@ -70,6 +70,7 @@ class HotelReservationCreate(BaseModel):
     Check_Out_Date: date
     Check_Out_Time: Optional[str] = None
     Rate: Optional[float] = None
+    Special_Request: Optional[str] = Field(default=None, max_length=500)
 
 
 class FlightReservationCreate(BaseModel):
@@ -91,7 +92,7 @@ class HotelReservationUpdate(BaseModel):
     Check_Out_Date: Optional[date] = None
     Check_Out_Time: Optional[str] = None
     Rate: Optional[float] = None
-
+    Special_Request: Optional[str] = Field(default=None, max_length=500)
 
 class FlightReservationUpdate(BaseModel):
     Airline_Code: Optional[str] = None
