@@ -218,7 +218,7 @@ def create_booking(booking: BookingCreate, db: Session = Depends(get_db)):
         db.add(
             HotelReservation(
                 Booking_Id=db_booking.Booking_Id,
-                **hotel.model_dump(),
+                **hotel.model_dump(exclude={"Hotel_Name", "City", "Country"}),
             )
         )
 
@@ -333,7 +333,10 @@ def update_hotel_reservation(
 
     update_data = reservation_update.model_dump(exclude_unset=True)
     if "Hotel_Code" in update_data:
-        _validate_hotel_code(db, update_data["Hotel_Code"])
+        _ensure_hotel_exists(
+            db,
+            update_data["Hotel_Code"],
+        )
 
     for key, value in update_data.items():
         setattr(db_reservation, key, value)

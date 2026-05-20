@@ -82,7 +82,7 @@ function toHotelReservations(payload) {
   if (!payload.hotel) return []
 
   const hotelCode = Number.parseInt(String(payload.hotel.id ?? ''), 10)
-
+  console.log('HOTEL PAYLOAD', payload.hotel)
   return [
   {
     Hotel_Code: Number.isFinite(hotelCode) ? hotelCode : 0,

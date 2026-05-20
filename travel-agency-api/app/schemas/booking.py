@@ -68,6 +68,9 @@ class ActivityReservationResponse(ActivityReservationCreate):
 
 class HotelReservationCreate(BaseModel):
     Hotel_Code: int
+    Hotel_Name: Optional[str] = None
+    City: Optional[str] = None
+    Country: Optional[str] = None
     Check_In_Date: date
     Check_In_Time: Optional[str] = None
     Check_Out_Date: date
