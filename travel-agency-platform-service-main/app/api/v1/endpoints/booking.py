@@ -105,7 +105,7 @@ def create_booking(booking: BookingCreate, db: Session = Depends(get_db)):
     """
     Create a new travel booking.
     * The 'User_Id' must refer to an existing User.
-    * Optional 'hotel_reservations' and 'flight_reservations' can be created in the same request.
+    * Optional 'hotel_reservations', 'flight_reservations', and 'activity_reservations' can be created in the same request.
     * Use the /setup-seed-data/ endpoint first if you need a test User_Id.
     """
     # Verify the user exists (crucial validation)
@@ -116,7 +116,7 @@ def create_booking(booking: BookingCreate, db: Session = Depends(get_db)):
             detail=f"Cannot create booking. User_Id {booking.User_Id} does not exist."
         )
 
-    booking_data = booking.model_dump(exclude={"hotel_reservations", "flight_reservations"})
+    booking_data = booking.model_dump(exclude={"hotel_reservations", "flight_reservations", "activity_reservations"})
     db_booking = Booking(**booking_data)
 
     db.add(db_booking)
@@ -139,6 +139,14 @@ def create_booking(booking: BookingCreate, db: Session = Depends(get_db)):
             FlightReservation(
                 Booking_Id=db_booking.Booking_Id,
                 **flight.model_dump(),
+            )
+        )
+
+    for activity in booking.activity_reservations:
+        db.add(
+            ActivityReservation(
+                Booking_Id=db_booking.Booking_Id,
+                **activity.model_dump(),
             )
         )
 

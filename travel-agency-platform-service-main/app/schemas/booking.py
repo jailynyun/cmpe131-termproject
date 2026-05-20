@@ -46,13 +46,16 @@ class ActivityReservationCreate(BaseModel):
     Location: Optional[str] = None
     Activity_Date: date
     Price: Optional[float] = None
-
+    Is_Private: Optional[bool] = False
+    Time_Slot: Optional[str] = None
 
 class ActivityReservationUpdate(BaseModel):
     Activity_Name: Optional[str] = None
     Location: Optional[str] = None
     Activity_Date: Optional[date] = None
     Price: Optional[float] = None
+    Is_Private: Optional[bool] = None
+    Time_Slot: Optional[str] = None
 
 
 class ActivityReservationResponse(ActivityReservationCreate):
@@ -71,6 +74,7 @@ class HotelReservationCreate(BaseModel):
     Check_Out_Time: Optional[str] = None
     Rate: Optional[float] = None
     Special_Request: Optional[str] = Field(default=None, max_length=500)
+    Room_Request_Type: Optional[str] = Field(default=None, max_length=100)
 
 
 class FlightReservationCreate(BaseModel):
@@ -93,6 +97,7 @@ class HotelReservationUpdate(BaseModel):
     Check_Out_Time: Optional[str] = None
     Rate: Optional[float] = None
     Special_Request: Optional[str] = Field(default=None, max_length=500)
+    Room_Request_Type: Optional[str] = Field(default=None, max_length=100)
 
 class FlightReservationUpdate(BaseModel):
     Airline_Code: Optional[str] = None
@@ -131,6 +136,7 @@ class BookingBase(BaseModel):
 class BookingCreate(BookingBase):
     hotel_reservations: list[HotelReservationCreate] = Field(default_factory=list)
     flight_reservations: list[FlightReservationCreate] = Field(default_factory=list)
+    activity_reservations: list[ActivityReservationCreate] = Field(default_factory=list)
 
 # Schema used when UPDATING an existing Booking (Request Body)
 class BookingUpdate(BaseModel):

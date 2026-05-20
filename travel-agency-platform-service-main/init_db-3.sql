@@ -101,6 +101,8 @@ CREATE TABLE Hotel_Reservations (
     Check_Out_Time TEXT,
     Rate REAL, -- Crucially, the rate charged for THIS specific stay
     Special_Request TEXT CHECK (length(Special_Request) <= 500),
+    Room_Request_Type TEXT CHECK (length(Room_Request_Type) <= 100),
+    Special_Request TEXT CHECK (length(Special_Request) <= 500),
 
     FOREIGN KEY (Booking_Id) REFERENCES Bookings(Booking_Id),
     FOREIGN KEY (Hotel_Code) REFERENCES Hotel_Master(Hotel_Code)
@@ -135,6 +137,8 @@ CREATE TABLE Activity_Reservations (
     Location TEXT,
     Activity_Date TEXT NOT NULL,
     Price REAL,
+    Is_Private INTEGER DEFAULT 0,
+    Time_Slot TEXT,
 
     FOREIGN KEY (Booking_Id) REFERENCES Bookings(Booking_Id)
 );

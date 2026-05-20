@@ -2,7 +2,7 @@
 # SQLALCHEMY MODELS (Zone 2 of ERD)
 # ==========================================
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Boolean
 from sqlalchemy.orm import relationship
 from app.core.database import Base # Import Base from your core config
 
@@ -43,8 +43,9 @@ class HotelReservation(Base):
     Check_Out_Time = Column(String, nullable=True)
     Rate = Column(Float, nullable=True)
     Special_Request = Column(String(500), nullable=True)
-    booking = relationship("Booking", back_populates="hotel_reservations")
+    Room_Request_Type = Column(String(100), nullable=True)
 
+    booking = relationship("Booking", back_populates="hotel_reservations")
 
 class FlightReservation(Base):
     __tablename__ = "flight_reservations"
@@ -71,6 +72,8 @@ class ActivityReservation(Base):
     Location = Column(String, nullable=True)
     Activity_Date = Column(Date, nullable=False)
     Price = Column(Float, nullable=True)
+    Is_Private = Column(Boolean, default=False)
+    Time_Slot = Column(String, nullable=True)
 
     booking = relationship("Booking", back_populates="activity_reservations")
 
