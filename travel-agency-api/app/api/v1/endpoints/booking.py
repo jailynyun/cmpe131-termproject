@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 
 from app.core.database import get_db
-from app.models.booking import Booking, User, HotelReservation, FlightReservation, ActivityReservation
+from app.models.booking import Booking, User, HotelReservation, FlightReservation, ActivityReservation, HotelMaster
 from app.schemas.booking import (
     BookingResponse,
     BookingDetailResponse,
@@ -91,6 +91,18 @@ def get_bookings_by_agent_user(
         .all()
     )
 
+    for booking in bookings:
+        for hotel in booking.hotel_reservations:
+            hotel_master = (
+                db.query(HotelMaster)
+                .filter(HotelMaster.Hotel_Code == hotel.Hotel_Code)
+                .first()
+            )
+
+            hotel.Hotel_Name = (
+                hotel_master.Hotel_Name if hotel_master else None
+            )
+
     return bookings
 
 # 2. READ: Get a specific Booking by ID (with full details)
@@ -100,8 +112,24 @@ def read_booking(booking_id: int, db: Session = Depends(get_db)):
     Retrieve detailed information about a specific booking, including user details.
     """
     db_booking = db.query(Booking).filter(Booking.Booking_Id == booking_id).first()
+
     if db_booking is None:
-        raise HTTPException(status_code=404, detail=f"Booking with ID {booking_id} not found")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Booking with ID {booking_id} not found"
+        )
+
+    for hotel in db_booking.hotel_reservations:
+        hotel_master = (
+            db.query(HotelMaster)
+            .filter(HotelMaster.Hotel_Code == hotel.Hotel_Code)
+            .first()
+        )
+
+        hotel.Hotel_Name = (
+            hotel_master.Hotel_Name if hotel_master else None
+        )
+
     return db_booking
 
 # 3. CREATE: Add a new Booking

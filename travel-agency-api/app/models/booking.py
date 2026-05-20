@@ -31,6 +31,11 @@ class Booking(Base):
     flight_reservations = relationship("FlightReservation", back_populates="booking", cascade="all, delete-orphan")
     activity_reservations = relationship("ActivityReservation", back_populates="booking", cascade="all, delete-orphan")
 
+class HotelMaster(Base):
+    __tablename__ = "Hotel_Master"
+
+    Hotel_Code = Column(Integer, primary_key=True, index=True)
+    Hotel_Name = Column(String, nullable=False)
 
 class HotelReservation(Base):
     __tablename__ = "hotel_reservations"

@@ -113,6 +113,7 @@ class FlightReservationUpdate(BaseModel):
 
 class HotelReservationResponse(HotelReservationCreate):
     Reservation_No: int
+    Hotel_Name: Optional[str] = None
 
     class Config:
         from_attributes = True
