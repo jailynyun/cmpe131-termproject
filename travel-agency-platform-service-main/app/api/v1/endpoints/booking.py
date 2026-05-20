@@ -68,6 +68,31 @@ def read_bookings(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
     bookings = db.query(Booking).offset(skip).limit(limit).all()
     return bookings
 
+@router.get(
+    "/bookings/by-agent-user",
+    response_model=List[BookingDetailResponse],
+    summary="Get bookings by agent and user",
+)
+def get_bookings_by_agent_user(
+    agent_id: int,
+    user_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Retrieve all bookings for a specific agent/user combination.
+    """
+
+    bookings = (
+        db.query(Booking)
+        .filter(
+            Booking.Agent_Id == agent_id,
+            Booking.User_Id == user_id,
+        )
+        .all()
+    )
+
+    return bookings
+
 # 2. READ: Get a specific Booking by ID (with full details)
 @router.get("/bookings/{booking_id}", response_model=BookingDetailResponse, summary="Get booking details")
 def read_booking(booking_id: int, db: Session = Depends(get_db)):

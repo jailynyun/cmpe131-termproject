@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from app.core.database import get_db
 from app.models.booking import User
@@ -17,6 +17,30 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Retrieve a paginated list of all users."""
     return db.query(User).offset(skip).limit(limit).all()
 
+@router.get("/login", summary="Login user")
+def login_user(
+    email: str = Query(...),
+    password: str = Query(...),
+    db: Session = Depends(get_db),
+):
+    """
+    Authenticate a user by email and password.
+    Returns the User_ID on success.
+    """
+    db_user = db.query(User).filter(User.Email == email).first()
+
+    if db_user is None:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    if password != "CMPE-131@2026":
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    return {
+        "User_ID": db_user.User_ID,
+        "First_Name": db_user.First_Name,
+        "Last_Name": db_user.Last_Name,
+        "Email": db_user.Email,
+    }
 
 @router.get("/{user_id}", response_model=UserResponse, summary="Get a user by ID")
 def read_user(user_id: int, db: Session = Depends(get_db)):
