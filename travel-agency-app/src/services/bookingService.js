@@ -92,6 +92,8 @@ function toHotelReservations(payload) {
     Check_Out_Date: normalizeDate(payload.hotel.checkOut, normalizeDate(payload.searchParams?.toDate || payload.searchParams?.fromDate)),
     Check_Out_Time: normalizeTime(payload.hotel.checkOutTime),
     Rate: Number(payload.hotel.totalPrice ?? 0),
+    Room_Request_Type: payload.hotel.Room_Request_Type || null,
+    Special_Request: payload.hotel.Special_Request || null,
   },
 ]
 }

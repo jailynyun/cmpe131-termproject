@@ -101,6 +101,23 @@ const emit = defineEmits(['book', 'clear'])
             <div class="item-sub">{{ selectedHotel.roomType }}</div>
             <div class="item-sub">{{ selectedHotel.nights }} night{{ selectedHotel.nights > 1 ? 's' : '' }} · ${{ selectedHotel.pricePerNight }}/night</div>
             <div class="item-price">${{ selectedHotel.totalPrice.toLocaleString() }}</div>
+            <div class="hotel-request-fields">
+              <label class="request-label">Room Request</label>
+              <input
+                v-model="selectedHotel.Room_Request_Type"
+                class="request-input"
+                type="text"
+                placeholder="e.g. Ocean view, king bed"
+              />
+
+              <label class="request-label">Special Request</label>
+              <textarea
+                v-model="selectedHotel.Special_Request"
+                class="request-textarea"
+                rows="3"
+                placeholder="e.g. Honeymoon room decoration, champagne, rose petals"
+              />
+            </div>
           </div>
         </div>
         <div v-else class="summary-section summary-section--empty">
@@ -307,6 +324,29 @@ const emit = defineEmits(['book', 'clear'])
 
 .summary-item--activity {
   padding: 0.5rem 0.75rem;
+}
+
+.hotel-request-fields {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.request-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.request-input,
+.request-textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.78rem;
+  resize: vertical;
 }
 
 .activity-row {
