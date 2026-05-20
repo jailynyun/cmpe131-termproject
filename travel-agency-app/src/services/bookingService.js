@@ -26,7 +26,7 @@ function normalizeTime(value, fallback = '00:00') {
 
 function splitFlightNumber(value) {
   const raw = String(value || '').trim().toUpperCase()
-  const match = raw.match(/^([A-Z]{2,3})\s*-?(\d{1,4}[A-Z]?)$/)
+  const match = raw.match(/^(?<airline>[A-Z][A-Z0-9])\s*-?(?<flight>\d{1,4}[A-Z]?)$/)
   if (match) {
     return {
       airlineCode: match[1],

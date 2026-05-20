@@ -176,7 +176,13 @@ INSERT INTO Airline_Master (Airline_Code, Airline_Name) VALUES
 ('AA', 'American Airlines'),
 ('BA', 'British Airways'),
 ('DL', 'Delta Air Lines'),
-('VS', 'Virgin Atlantic');
+('VS', 'Virgin Atlantic'),
+('AS', 'Alaska Airlines'),
+('F9', 'Frontier Airlines'),
+('UA', 'United Airlines'),
+('WN', 'Southwest Airlines'),
+('NK', 'Spirit Airlines'),
+('B6', 'JetBlue Airways');
 
 -- 5. Seed Airport_Master (Major Hubs)
 INSERT INTO Airport_Master (Airport_Code, Airport_Name, City, Country) VALUES
