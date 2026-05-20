@@ -71,7 +71,12 @@ onMounted(() => {
             <p class="trip-card__meta">Booking #{{ trip.bookingId }}</p>
             <h2 class="trip-card__title">{{ formatDate(trip.startDate) }} to {{ formatDate(trip.endDate) }}</h2>
           </div>
-          <div class="trip-card__pill">{{ trip.flightReservations.length }} flights · {{ trip.hotelReservations.length }} hotels</div>
+
+          <div class="trip-card__pill">
+            {{ trip.flightReservations.length }} flights ·
+            {{ trip.hotelReservations.length }} hotels ·
+            {{ (trip.activityReservations || []).length }} activities
+          </div>
         </div>
 
         <section class="trip-section">
@@ -100,6 +105,66 @@ onMounted(() => {
               <div>Check in: {{ formatDate(hotel.Check_In_Date) }} {{ hotel.Check_In_Time }}</div>
               <div>Check out: {{ formatDate(hotel.Check_Out_Date) }} {{ hotel.Check_Out_Time }}</div>
               <div>Rate: ${{ Number(hotel.Rate || 0).toLocaleString() }}</div>
+              <p v-if="hotel.Room_Request_Type">
+                <strong>Room Request:</strong> {{ hotel.Room_Request_Type }}
+              </p>
+
+              <p v-if="hotel.Special_Request">
+                <strong>Special Request:</strong> {{ hotel.Special_Request }}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="trip-section">
+          <h3 class="trip-section__title">Activity Details</h3>
+
+          <p
+            v-if="(trip.activityReservations || []).length === 0"
+            class="trip-section__empty"
+          >
+            No activities saved for this trip.
+          </p>
+
+          <div v-else class="reservation-grid">
+            <div
+              v-for="activity in trip.activityReservations || []"
+              :key="`${trip.bookingId}-${activity.Activity_Reservation_Id}`"
+              class="reservation-card"
+            >
+              <div class="reservation-card__title">
+                Activity Reservation
+              </div>
+
+              <div>
+                <strong>Activity Name:</strong>
+                {{ activity.Activity_Name || 'N/A' }}
+              </div>
+
+              <div v-if="activity.Location">
+                <strong>Location:</strong>
+                {{ activity.Location }}
+              </div>
+
+              <div>
+                <strong>Date:</strong>
+                {{ formatDate(activity.Activity_Date) }}
+              </div>
+
+              <div v-if="activity.Time_Slot">
+                <strong>Time Slot:</strong>
+                {{ activity.Time_Slot }}
+              </div>
+
+              <div>
+                <strong>Private Activity:</strong>
+                {{ activity.Is_Private ? 'Yes' : 'No' }}
+              </div>
+
+              <div v-if="activity.Price">
+                <strong>Price:</strong>
+                ${{ Number(activity.Price).toLocaleString() }}
+              </div>
             </div>
           </div>
         </section>

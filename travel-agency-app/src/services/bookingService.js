@@ -147,8 +147,18 @@ function normalizeBookingRecord(record) {
     startDate: normalizeDate(record?.Start_Date ?? record?.startDate),
     endDate: normalizeDate(record?.End_Date ?? record?.endDate),
     user: record?.user || null,
-    hotelReservations: Array.isArray(record?.hotel_reservations) ? record.hotel_reservations : [],
-    flightReservations: Array.isArray(record?.flight_reservations) ? record.flight_reservations : [],
+
+    hotelReservations: Array.isArray(record?.hotel_reservations)
+      ? record.hotel_reservations
+      : [],
+
+    flightReservations: Array.isArray(record?.flight_reservations)
+      ? record.flight_reservations
+      : [],
+
+    activityReservations: Array.isArray(record?.activity_reservations)
+      ? record.activity_reservations
+      : [],
   }
 }
 
