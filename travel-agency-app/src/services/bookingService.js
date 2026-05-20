@@ -84,15 +84,16 @@ function toHotelReservations(payload) {
   const hotelCode = Number.parseInt(String(payload.hotel.id ?? ''), 10)
 
   return [
-    {
-      Hotel_Code: Number.isFinite(hotelCode) ? hotelCode : 0,
-      Check_In_Date: normalizeDate(payload.hotel.checkIn, normalizeDate(payload.searchParams?.fromDate)),
-      Check_In_Time: normalizeTime(payload.hotel.checkInTime),
-      Check_Out_Date: normalizeDate(payload.hotel.checkOut, normalizeDate(payload.searchParams?.toDate || payload.searchParams?.fromDate)),
-      Check_Out_Time: normalizeTime(payload.hotel.checkOutTime),
-      Rate: Number(payload.hotel.totalPrice ?? 0),
-    },
-  ]
+  {
+    Hotel_Code: Number.isFinite(hotelCode) ? hotelCode : 0,
+    Hotel_Name: payload.hotel.name || payload.hotel.hotelName || `Hotel ${hotelCode}`,
+    Check_In_Date: normalizeDate(payload.hotel.checkIn, normalizeDate(payload.searchParams?.fromDate)),
+    Check_In_Time: normalizeTime(payload.hotel.checkInTime),
+    Check_Out_Date: normalizeDate(payload.hotel.checkOut, normalizeDate(payload.searchParams?.toDate || payload.searchParams?.fromDate)),
+    Check_Out_Time: normalizeTime(payload.hotel.checkOutTime),
+    Rate: Number(payload.hotel.totalPrice ?? 0),
+  },
+]
 }
 
 async function resolveUserId(payload) {

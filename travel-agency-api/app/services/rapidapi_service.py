@@ -24,6 +24,12 @@ class RapidApiService:
             order_by=order_by,
         )
 
+    def search_hotel_locations(self, name: str, locale: str = "en-us"):
+        return self.rapidapi.search_hotel_locations(
+            name=name,
+            locale=locale,
+        )
+
     def search_hotels(
         self,
         page_number: int,

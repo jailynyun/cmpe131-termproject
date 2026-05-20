@@ -38,7 +38,8 @@ async def search_attractions(
 async def search_hotels(
     page_number: int = Query(0, ge=0),
     dest_type: str = Query("city"),
-    dest_id: str = Query(..., description="Example: -553173"),
+    dest_id: str | None = Query(None, description="Example: -553173"),
+    dest_name: str | None = Query(None, description="Example: Los Angeles"),
     units: str = Query("metric"),
     children_number: int = Query(0, ge=0),
     locale: str = Query("en-gb"),
@@ -54,6 +55,34 @@ async def search_hotels(
     service: RapidApiService = Depends(get_rapidapi_service),
 ):
     try:
+        if not dest_id:
+            if not dest_name:
+                raise HTTPException(
+                    status_code=422,
+                    detail="Either dest_id or dest_name is required.",
+                )
+
+            locations = service.search_hotel_locations(
+                name=dest_name,
+                locale=locale,
+            )
+
+            if not locations:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"No hotel destination found for '{dest_name}'.",
+                )
+
+            best_location = locations[0]
+            dest_id = str(best_location.get("dest_id"))
+            dest_type = best_location.get("dest_type") or dest_type
+
+            if not dest_id or dest_id == "None":
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"No valid dest_id found for '{dest_name}'.",
+                )
+
         return service.search_hotels(
             page_number=page_number,
             dest_type=dest_type,

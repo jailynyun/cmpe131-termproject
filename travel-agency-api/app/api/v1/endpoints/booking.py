@@ -29,13 +29,44 @@ def _exists(db: Session, sql: str, params: dict) -> bool:
     return db.execute(text(sql), params).scalar() is not None
 
 
-def _validate_hotel_code(db: Session, hotel_code: int) -> None:
-    if not _exists(
+def _ensure_hotel_exists(
+    db: Session,
+    hotel_code: int,
+    hotel_name: str | None = None,
+    city: str | None = None,
+    country: str | None = None,
+) -> None:
+    exists = _exists(
         db,
         "SELECT 1 FROM Hotel_Master WHERE Hotel_Code = :hotel_code LIMIT 1",
         {"hotel_code": hotel_code},
-    ):
-        raise HTTPException(status_code=400, detail=f"Hotel_Code {hotel_code} does not exist in Hotel_Master.")
+    )
+
+    if exists:
+        return
+
+    db.execute(
+        text("""
+            INSERT INTO Hotel_Master (
+                Hotel_Code,
+                Hotel_Name,
+                City,
+                Country
+            )
+            VALUES (
+                :hotel_code,
+                :hotel_name,
+                :city,
+                :country
+            )
+        """),
+        {
+            "hotel_code": hotel_code,
+            "hotel_name": hotel_name or f"Hotel {hotel_code}",
+            "city": city or "Unknown",
+            "country": country or "Unknown",
+        },
+    )
 
 
 def _validate_airline_code(db: Session, airline_code: str) -> None:
@@ -176,7 +207,14 @@ def create_booking(booking: BookingCreate, db: Session = Depends(get_db)):
     db.flush()
 
     for hotel in booking.hotel_reservations:
-        _validate_hotel_code(db, hotel.Hotel_Code)
+        _ensure_hotel_exists(
+            db,
+            hotel.Hotel_Code,
+            getattr(hotel, "Hotel_Name", None),
+            getattr(hotel, "City", None),
+            getattr(hotel, "Country", None),
+        )
+
         db.add(
             HotelReservation(
                 Booking_Id=db_booking.Booking_Id,

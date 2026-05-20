@@ -44,6 +44,18 @@ class RapidApiClient:
             params=querystring,
         )
 
+    def search_hotel_locations(self, name: str, locale: str = "en-us"):
+        querystring = {
+            "locale": locale,
+            "name": name,
+        }
+
+        return self._get(
+            host="booking-com.p.rapidapi.com",
+            path="v1/hotels/locations",
+            params=querystring,
+        )
+
     def search_hotels(
         self,
         page_number: int,
