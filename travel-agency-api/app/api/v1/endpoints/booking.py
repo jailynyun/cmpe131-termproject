@@ -69,13 +69,36 @@ def _ensure_hotel_exists(
     )
 
 
-def _validate_airline_code(db: Session, airline_code: str) -> None:
-    if not _exists(
+def _ensure_airline_exists(
+    db: Session,
+    airline_code: str,
+    airline_name: str | None = None,
+) -> None:
+    exists = _exists(
         db,
         "SELECT 1 FROM Airline_Master WHERE Airline_Code = :airline_code LIMIT 1",
         {"airline_code": airline_code},
-    ):
-        raise HTTPException(status_code=400, detail=f"Airline_Code '{airline_code}' does not exist in Airline_Master.")
+    )
+
+    if exists:
+        return
+
+    db.execute(
+        text("""
+            INSERT INTO Airline_Master (
+                Airline_Code,
+                Airline_Name
+            )
+            VALUES (
+                :airline_code,
+                :airline_name
+            )
+        """),
+        {
+            "airline_code": airline_code,
+            "airline_name": airline_name or f"Airline {airline_code}",
+        },
+    )
 
 
 def _validate_airport_code(db: Session, airport_code: str, field_name: str) -> None:
@@ -223,7 +246,10 @@ def create_booking(booking: BookingCreate, db: Session = Depends(get_db)):
         )
 
     for flight in booking.flight_reservations:
-        _validate_airline_code(db, flight.Airline_Code)
+        _ensure_airline_exists(
+            db,
+            flight.Airline_Code,
+        )
         _validate_airport_code(db, flight.Origin_Airport_Code, "Origin_Airport_Code")
         _validate_airport_code(db, flight.Destination_Airport_Code, "Destination_Airport_Code")
         db.add(
@@ -418,7 +444,10 @@ def update_flight_reservation(
 
     update_data = reservation_update.model_dump(exclude_unset=True)
     if "Airline_Code" in update_data:
-        _validate_airline_code(db, update_data["Airline_Code"])
+        _ensure_airline_exists(
+            db,
+            update_data["Airline_Code"],
+        )
     if "Origin_Airport_Code" in update_data:
         _validate_airport_code(db, update_data["Origin_Airport_Code"], "Origin_Airport_Code")
     if "Destination_Airport_Code" in update_data:
