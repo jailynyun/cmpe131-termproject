@@ -4,6 +4,12 @@ class RapidApiService:
     def __init__(self, rapidapi_client: RapidApiClient) -> None:
         self.rapidapi = rapidapi_client
 
+    def search_attraction_locations(self, name: str, locale: str = "en-gb"):
+        return self.rapidapi.search_attraction_locations(
+            name=name,
+            locale=locale,
+        )
+
     def search_attractions(
         self,
         start_date: str,

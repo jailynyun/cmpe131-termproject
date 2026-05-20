@@ -13,14 +13,46 @@ def get_rapidapi_service() -> RapidApiService:
 async def search_attractions(
     start_date: str = Query(..., description="Format: YYYY-MM-DD"),
     end_date: str = Query(..., description="Format: YYYY-MM-DD"),
-    dest_id: str = Query(..., description="Destination ID, e.g. 20088325"),
+
+    dest_id: str | None = Query(None, description="Destination ID"),
+    dest_name: str | None = Query(None, description="Example: Los Angeles"),
+    country_name: str | None = Query(None),
+
     locale: str = Query("en-gb"),
     page_number: int = Query(0, ge=0),
     currency: str = Query("AED"),
     order_by: str = Query("attr_book_score"),
+
     service: RapidApiService = Depends(get_rapidapi_service),
 ):
     try:
+        if not dest_id:
+            if not dest_name:
+                raise HTTPException(
+                    status_code=422,
+                    detail="Either dest_id or dest_name is required.",
+                )
+
+            locations = service.search_hotel_locations(
+                name=dest_name,
+                locale=locale,
+            )
+
+            if not locations:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"No destination found for '{dest_name}'.",
+                )
+
+            best_location = locations[0]
+            dest_id = str(best_location.get("dest_id"))
+
+            if not dest_id or dest_id == "None":
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"No valid dest_id found for '{dest_name}'.",
+                )
+
         return service.search_attractions(
             start_date=start_date,
             end_date=end_date,
@@ -30,9 +62,12 @@ async def search_attractions(
             currency=currency,
             order_by=order_by,
         )
-    except RapidApiError as error:
-        raise HTTPException(status_code=error.status_code, detail=error.detail) from error
 
+    except RapidApiError as error:
+        raise HTTPException(
+            status_code=error.status_code,
+            detail=error.detail,
+        ) from error
 
 @router.get("/hotels/search")
 async def search_hotels(

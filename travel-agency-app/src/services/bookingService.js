@@ -106,6 +106,26 @@ async function resolveUserId(payload) {
   throw new Error('Please sign in first before booking.')
 }
 
+function toActivityReservations(payload) {
+  if (!Array.isArray(payload.activities)) return []
+
+  return payload.activities.map((activity) => ({
+    Activity_Name: activity.name || activity.title || 'Activity',
+    Location: payload.searchParams?.destination || null,
+    Activity_Date: normalizeDate(
+      activity.date,
+      normalizeDate(payload.searchParams?.fromDate)
+    ),
+    Price: Number(activity.totalPrice ?? activity.pricePerPerson ?? 0),
+    Is_Private: Boolean(
+      activity.isPrivate ||
+      activity.private ||
+      String(activity.name || '').toLowerCase().includes('private')
+    ),
+    Time_Slot: activity.duration || null,
+  }))
+}
+
 function buildBookingPayload(payload, userId) {
   const startDate = normalizeDate(payload.searchParams?.fromDate)
   const endDate = normalizeDate(payload.searchParams?.toDate || payload.searchParams?.fromDate)
@@ -118,6 +138,7 @@ function buildBookingPayload(payload, userId) {
     End_Date: endDate,
     hotel_reservations: toHotelReservations(payload),
     flight_reservations: toFlightReservations(payload),
+    activity_reservations: toActivityReservations(payload),
   }
 }
 

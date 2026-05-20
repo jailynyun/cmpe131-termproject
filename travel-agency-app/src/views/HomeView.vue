@@ -23,6 +23,7 @@ const {
   selectFlight,
   selectReturnFlight,
   selectHotel,
+  toggleActivity,
   clearSelections,
   book,
 } = useBooking()
@@ -157,6 +158,8 @@ function handleClear() {
               :activities="results.activities"
               :loading="loading.activities"
               :error="errors.activities"
+              :selected-activities="selectedActivities"
+              @select="toggleActivity"
             />
           </div>
         </div>

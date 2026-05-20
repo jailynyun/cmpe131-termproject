@@ -3,7 +3,14 @@ defineProps({
   activities: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
   error: { type: String, default: null },
+  selectedActivities: { type: Array, default: () => [] },
 })
+
+const emit = defineEmits(['select'])
+
+function isSelected(activity, selectedActivities) {
+  return selectedActivities.some((a) => a.id === activity.id)
+}
 </script>
 
 <template>
@@ -22,36 +29,78 @@ defineProps({
       <p>No activities found for this destination.</p>
     </div>
 
-    <p v-else class="activities-hint">Browse activities available for this destination.</p>
+    <template v-else>
+      <p class="activities-hint">
+        Browse activities available for this destination.
+      </p>
 
-    <div
-      v-for="activity in activities"
-      :key="activity.id"
-      class="card activity-card"
-    >
-      <div class="activity-card__icon">{{ activity.icon }}</div>
+      <div
+        v-for="activity in activities"
+        :key="activity.id"
+        class="card activity-card"
+        :class="{ 'card--selected': isSelected(activity, selectedActivities) }"
+        @click="emit('select', activity)"
+      >
+        <div class="activity-card__icon">
+          {{ activity.icon }}
+        </div>
 
-      <div class="activity-card__body">
-        <div class="activity-card__top">
-          <div>
-            <div class="activity-name">{{ activity.name }}</div>
-            <div class="activity-meta">
-              <span class="category-badge">{{ activity.category }}</span>
-              <span class="meta-dot">·</span>
-              <span class="meta-text">⏱ {{ activity.duration }}</span>
-              <span class="meta-dot">·</span>
-              <span class="meta-text">⭐ {{ activity.rating }} ({{ activity.reviews }})</span>
+        <div class="activity-card__body">
+          <div class="activity-card__top">
+            <div>
+              <div class="activity-name">
+                {{ activity.name }}
+              </div>
+
+              <div class="activity-meta">
+                <span class="category-badge">
+                  {{ activity.category }}
+                </span>
+
+                <span class="meta-dot">·</span>
+
+                <span class="meta-text">
+                  ⏱ {{ activity.duration }}
+                </span>
+
+                <span class="meta-dot">·</span>
+
+                <span class="meta-text">
+                  ⭐ {{ activity.rating }} ({{ activity.reviews }})
+                </span>
+              </div>
+
+              <div class="activity-desc">
+                {{ activity.description }}
+              </div>
             </div>
-            <div class="activity-desc">{{ activity.description }}</div>
+
+            <div class="activity-price-block">
+              <span class="price">
+                ${{ activity.pricePerPerson }}
+              </span>
+
+              <span class="price-sub">
+                /person
+              </span>
+
+              <div class="price-total">
+                ${{ activity.totalPrice.toLocaleString() }} total
+              </div>
+            </div>
           </div>
-          <div class="activity-price-block">
-            <span class="price">${{ activity.pricePerPerson }}</span>
-            <span class="price-sub">/person</span>
-            <div class="price-total">${{ activity.totalPrice.toLocaleString() }} total</div>
+
+          <div class="activity-card__footer">
+            <span
+              v-if="isSelected(activity, selectedActivities)"
+              class="selected-indicator"
+            >
+              ✓ Selected
+            </span>
           </div>
         </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -79,11 +128,28 @@ defineProps({
   align-items: flex-start;
   gap: 0.75rem;
   padding: 1rem;
+  cursor: pointer;
 }
 
 .card:hover {
   border-color: var(--color-primary-light);
   box-shadow: 0 4px 16px rgba(26, 54, 93, 0.1);
+}
+
+.card--selected {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(26, 54, 93, 0.15) !important;
+  background: var(--color-primary-bg);
+}
+
+.activity-card__footer {
+  margin-top: 0.5rem;
+}
+
+.selected-indicator {
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 0.8rem;
 }
 
 .skeleton {
