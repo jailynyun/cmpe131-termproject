@@ -9,6 +9,18 @@ const { userId, userEmail } = useAuth()
 const isLoading = ref(true)
 const errorMessage = ref('')
 const trips = ref([])
+const editingHotel = ref(null)
+const editingActivity = ref(null)
+
+const hotelEditForm = ref({
+  Room_Request_Type: '',
+  Special_Request: '',
+})
+
+const activityEditForm = ref({
+  Time_Slot: '',
+  Is_Private: false,
+})
 
 function formatDate(value) {
   const date = new Date(value)
@@ -25,8 +37,10 @@ const tripCountLabel = computed(() => {
   return tripCount === 1 ? '1 saved trip' : `${tripCount} saved trips`
 })
 
-async function loadTrips() {
-  isLoading.value = true
+async function loadTrips(showLoading = true) {
+  if (showLoading) {
+    isLoading.value = true
+  }
   errorMessage.value = ''
 
   try {
@@ -38,8 +52,70 @@ async function loadTrips() {
     errorMessage.value = error.message || 'Unable to load saved trips.'
     trips.value = []
   } finally {
-    isLoading.value = false
+    if (showLoading) {
+      isLoading.value = false
+    }
   }
+}
+
+function startHotelEdit(hotel) {
+  editingHotel.value = hotel.Reservation_No
+
+  hotelEditForm.value = {
+    Room_Request_Type: hotel.Room_Request_Type || '',
+    Special_Request: hotel.Special_Request || '',
+  }
+}
+
+function startActivityEdit(activity) {
+  editingActivity.value = activity.Activity_Reservation_Id
+
+  activityEditForm.value = {
+    Time_Slot: activity.Time_Slot || '',
+    Is_Private: Boolean(activity.Is_Private),
+  }
+}
+
+async function saveHotelEdit(trip, hotel) {
+  const scrollY = window.scrollY
+
+  await bookingService.updateHotelReservation(
+    trip.bookingId,
+    hotel.Reservation_No,
+    {
+      Room_Request_Type: hotelEditForm.value.Room_Request_Type,
+      Special_Request: hotelEditForm.value.Special_Request,
+    }
+  )
+
+  editingHotel.value = null
+  await loadTrips(false)
+
+  window.scrollTo({
+    top: scrollY,
+    behavior: 'instant',
+  })
+}
+
+async function saveActivityEdit(trip, activity) {
+  const scrollY = window.scrollY
+
+  await bookingService.updateActivityReservation(
+    trip.bookingId,
+    activity.Activity_Reservation_Id,
+    {
+      Time_Slot: activityEditForm.value.Time_Slot,
+      Is_Private: activityEditForm.value.Is_Private,
+    }
+  )
+
+  editingActivity.value = null
+  await loadTrips(false)
+
+  window.scrollTo({
+    top: scrollY,
+    behavior: 'instant',
+  })
 }
 
 onMounted(() => {
@@ -108,10 +184,43 @@ onMounted(() => {
               <p v-if="hotel.Room_Request_Type">
                 <strong>Room Request:</strong> {{ hotel.Room_Request_Type }}
               </p>
-
               <p v-if="hotel.Special_Request">
                 <strong>Special Request:</strong> {{ hotel.Special_Request }}
               </p>
+              <button
+                type="button"
+                @click="startHotelEdit(hotel)"
+                class="edit-button"
+              >
+                Edit Hotel
+              </button>
+              <div
+                v-if="editingHotel === hotel.Reservation_No"
+                class="edit-form"
+              >
+                <label>
+                  Room Request
+                  <input
+                    v-model="hotelEditForm.Room_Request_Type"
+                    type="text"
+                  />
+                </label>
+
+                <label>
+                  Special Request
+                  <textarea
+                    v-model="hotelEditForm.Special_Request"
+                  ></textarea>
+                </label>
+
+                <button
+                  type="button"
+                  @click="saveHotelEdit(trip, hotel)"
+                  class="save-button"
+                >
+                  Save Hotel Changes
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -165,6 +274,42 @@ onMounted(() => {
                 <strong>Price:</strong>
                 ${{ Number(activity.Price).toLocaleString() }}
               </div>
+              <button
+                type="button"
+                @click="startActivityEdit(activity)"
+                class="edit-button"
+              >
+                Edit Activity
+              </button>
+
+              <div
+                v-if="editingActivity === activity.Activity_Reservation_Id"
+                class="edit-form"
+              >
+                <label>
+                  Time Slot
+                  <input
+                    v-model="activityEditForm.Time_Slot"
+                    type="text"
+                  />
+                </label>
+
+                <label class="checkbox-label">
+                  <input
+                    v-model="activityEditForm.Is_Private"
+                    type="checkbox"
+                  />
+                  Private Activity
+                </label>
+
+                <button
+                  type="button"
+                  @click="saveActivityEdit(trip, activity)"
+                  class="save-button"
+                >
+                  Save Activity Changes
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -178,6 +323,47 @@ onMounted(() => {
   min-height: calc(100vh - 56px);
   background: var(--color-bg);
   padding: 2rem;
+}
+
+.edit-button,
+.save-button {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.edit-button {
+  background: #e8eefc;
+  color: #1a365d;
+}
+
+.save-button {
+  background: #1a365d;
+  color: white;
+}
+
+.edit-form {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.edit-form input,
+.edit-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .my-trips-view__hero {

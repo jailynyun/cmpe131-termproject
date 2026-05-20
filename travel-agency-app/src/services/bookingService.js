@@ -175,6 +175,18 @@ export const bookingService = {
     return normalizeBookingResponse(response)
   },
 
+  async updateBooking(bookingId, payload) {
+    return api.patch(`/bookings/${bookingId}`, payload)
+  },
+
+  async updateHotelReservation(bookingId, reservationNo, payload) {
+    return api.patch(`/bookings/${bookingId}/hotel-reservations/${reservationNo}`, payload)
+  },
+
+  async updateActivityReservation(bookingId, activityReservationId, payload) {
+    return api.patch(`/bookings/${bookingId}/activity-reservations/${activityReservationId}`, payload)
+  },
+
   async listBookings({ userId, agentId }) {
     const normalizedUserId = Number(userId)
     const normalizedAgentId = Number(agentId)
