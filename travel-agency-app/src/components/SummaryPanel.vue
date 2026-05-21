@@ -14,6 +14,14 @@ const props = defineProps({
   userEmail: { type: String, default: '' },
 })
 
+const roomRequestOptions = [
+  'Honeymoon Decoration',
+  'Ocean View',
+  'King Bed',
+  'Late Check-In',
+  'Champagne Setup',
+  'Private Pool Villa',
+]
 const emit = defineEmits(['book', 'clear'])
 </script>
 
@@ -103,12 +111,20 @@ const emit = defineEmits(['book', 'clear'])
             <div class="item-price">${{ selectedHotel.totalPrice.toLocaleString() }}</div>
             <div class="hotel-request-fields">
               <label class="request-label">Room Request</label>
-              <input
+              <select
                 v-model="selectedHotel.Room_Request_Type"
                 class="request-input"
-                type="text"
-                placeholder="e.g. Ocean view, king bed"
-              />
+              >
+                <option value="">Select a room preference</option>
+
+                <option
+                  v-for="option in roomRequestOptions"
+                  :key="option"
+                  :value="option"
+                >
+                  {{ option }}
+                </option>
+              </select>
 
               <label class="request-label">Special Request</label>
               <textarea
@@ -116,6 +132,7 @@ const emit = defineEmits(['book', 'clear'])
                 class="request-textarea"
                 rows="3"
                 placeholder="e.g. Honeymoon room decoration, champagne, rose petals"
+                maxlength="500"
               />
             </div>
           </div>

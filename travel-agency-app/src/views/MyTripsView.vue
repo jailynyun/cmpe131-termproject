@@ -22,6 +22,15 @@ const activityEditForm = ref({
   Is_Private: false,
 })
 
+const roomRequestOptions = [
+  'Honeymoon Decoration',
+  'Ocean View',
+  'King Bed',
+  'Late Check-In',
+  'Champagne Setup',
+  'Private Pool Villa',
+]
+
 function formatDate(value) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value || 'N/A'
@@ -200,16 +209,27 @@ onMounted(() => {
               >
                 <label>
                   Room Request
-                  <input
+                  <select
                     v-model="hotelEditForm.Room_Request_Type"
-                    type="text"
-                  />
+                    class="request-input"
+                  >
+                    <option value="">Select a room preference</option>
+
+                    <option
+                      v-for="option in roomRequestOptions"
+                      :key="option"
+                      :value="option"
+                    >
+                      {{ option }}
+                    </option>
+                  </select>
                 </label>
 
                 <label>
                   Special Request
                   <textarea
                     v-model="hotelEditForm.Special_Request"
+                    maxlength="500"
                   ></textarea>
                 </label>
 
@@ -353,7 +373,8 @@ onMounted(() => {
 }
 
 .edit-form input,
-.edit-form textarea {
+.edit-form textarea,
+.edit-form select {
   width: 100%;
   padding: 0.5rem;
   border-radius: 6px;
