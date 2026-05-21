@@ -171,4 +171,19 @@ async def search_flights(
             return_date=return_date,
         )
     except RapidApiError as error:
-        raise HTTPException(status_code=error.status_code, detail=error.detail) from error
+        print("RapidAPI flight error:")
+        print("Status:", error.status_code)
+        print("Detail:", error.detail)
+
+        if "SEARCH_SEARCHFLIGHTS_NO_FLIGHTS_FOUND" in str(error.detail):
+            return {
+                "data": {
+                    "flightOffers": []
+                },
+                "message": "No flights found for this search."
+            }
+
+        raise HTTPException(
+            status_code=error.status_code,
+            detail=error.detail
+        ) from error
