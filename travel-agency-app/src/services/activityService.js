@@ -258,9 +258,9 @@ async function searchActivitiesViaApi(searchParams) {
         end_date: searchParams.toDate,
         dest_name,
         ...(country_name ? { country_name } : {}),
-        locale: 'en-gb',
+        locale: 'en-us',
         page_number: 0,
-        currency: 'AED',
+        currency: 'USD',
         //order_by: 'attr_book_score',
       },
       headers: {
