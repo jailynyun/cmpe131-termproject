@@ -51,6 +51,8 @@ const DESTINATION_ALIASES = {
   MAD: 'Madrid, Spain',
   ROME: 'Rome, Italy',
   FCO: 'Rome, Italy',
+  MALDIVES: 'Male, Maldives',
+  MLE: 'Male, Maldives',
 }
 
 const COUNTRY_ALIASES = {
@@ -107,7 +109,7 @@ function normalizeDestination(input) {
 
 function normalizeCountryName(value) {
   const country = String(value || '').trim()
-  if (!country) return 'United States'
+  if (!country) return ''
 
   const upper = country.toUpperCase()
   return COUNTRY_ALIASES[upper] || country
@@ -117,9 +119,13 @@ function getApiDestination(destination) {
   const normalizedDestination = normalizeDestination(destination)
   const [cityName, countryLabel] = normalizedDestination.split(',').map((part) => part?.trim())
 
+  const normalizedCountry = normalizeCountryName(countryLabel)
+
   return {
     dest_name: cityName || normalizedDestination || destination,
-    country_name: normalizeCountryName(countryLabel),
+    ...(normalizedCountry
+      ? { country_name: normalizedCountry }
+      : {}),
     normalizedDestination,
   }
 }
@@ -168,6 +174,36 @@ function getCategory(item) {
 
 function getIcon(category) {
   return CATEGORY_ICONS[String(category || '').toLowerCase()] || '🎯'
+}
+
+function isMaldivesSearch(destination) {
+  return String(destination || '').toLowerCase().includes('maldives')
+}
+
+function isSnorkelingActivity(activity) {
+  const text = `
+    ${activity.name || ''}
+    ${activity.category || ''}
+    ${activity.description || ''}
+    ${activity.location || ''}
+  `.toLowerCase()
+
+  return [
+    'snorkel',
+    'reef',
+    'marine',
+    'scuba',
+    'diving',
+    'lagoon',
+    'ocean',
+    'sea',
+    'water',
+    'boat',
+    'cruise',
+    'island',
+    'sandbank',
+    'dolphin',
+  ].some((keyword) => text.includes(keyword))
 }
 
 function mapAttraction(item, index, searchParams, normalizedDestination) {
@@ -221,11 +257,11 @@ async function searchActivitiesViaApi(searchParams) {
         start_date: searchParams.fromDate,
         end_date: searchParams.toDate,
         dest_name,
-        country_name,
+        ...(country_name ? { country_name } : {}),
         locale: 'en-gb',
         page_number: 0,
         currency: 'AED',
-        order_by: 'attr_book_score',
+        //order_by: 'attr_book_score',
       },
       headers: {
         accept: 'application/json',
@@ -239,10 +275,19 @@ async function searchActivitiesViaApi(searchParams) {
     throw new Error(getApiErrorMessage(error, 'Activity search failed.'))
   }
 
-  return extractAttractions(response.data)
-    .map((item, index) => mapAttraction(item, index, searchParams, normalizedDestination))
-    .filter((activity) => activity.pricePerPerson >= 0)
-    .sort((left, right) => left.pricePerPerson - right.pricePerPerson)
+let activities = extractAttractions(response.data)
+  .map((item, index) => mapAttraction(item, index, searchParams, normalizedDestination))
+  .filter((activity) => activity.pricePerPerson >= 0)
+
+if (isMaldivesSearch(normalizedDestination)) {
+  const filteredActivities = activities.filter(isSnorkelingActivity)
+
+  activities = filteredActivities.length > 0
+    ? filteredActivities
+    : activities
+}
+
+return activities.sort((left, right) => left.pricePerPerson - right.pricePerPerson)
 }
 
 export const activityService = {

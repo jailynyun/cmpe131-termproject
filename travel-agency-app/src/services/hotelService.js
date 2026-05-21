@@ -183,7 +183,7 @@ const COUNTRY_ALIASES = {
 
 function normalizeCountryName(value) {
   const country = String(value || '').trim()
-  if (!country) return 'United States'
+  if (!country) return ''
 
   const upper = country.toUpperCase()
   return COUNTRY_ALIASES[upper] || country
@@ -208,9 +208,13 @@ function getApiDestination(destination) {
   const normalizedDestination = normalizeDestination(destination)
   const [destName, countryLabel] = String(normalizedDestination || '').split(',').map((part) => part?.trim())
 
+  const normalizedCountry = normalizeCountryName(countryLabel)
+
   return {
     dest_name: destName || destination,
-    country_name: normalizeCountryName(countryLabel),
+    ...(normalizedCountry
+      ? { country_name: normalizedCountry }
+      : {}),
   }
 }
 

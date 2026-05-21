@@ -31,7 +31,7 @@ function isSelected(activity, selectedActivities) {
 
     <template v-else>
       <p class="activities-hint">
-        Browse activities available for this destination.
+        Browse private snorkeling and ocean activities available for this destination.
       </p>
 
       <div
