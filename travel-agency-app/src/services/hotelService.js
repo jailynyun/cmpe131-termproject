@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { tenantConfig } from '../config/tenantConfig.js'
 
 // Destination-keyed hotel inventory.
 
@@ -53,6 +54,8 @@ const DESTINATION_ALIASES = {
   MAD: 'Madrid, Spain',
   ROME: 'Rome, Italy',
   FCO: 'Rome, Italy',
+  MALDIVES: 'Maldives',
+  MLE: 'Maldives',
 }
 
 // city label → array of hotel definitions
@@ -251,6 +254,15 @@ function inferAmenities(hotel) {
   return amenities.slice(0, 6)
 }
 
+function getTenantPriceMultiplier() {
+  return tenantConfig.agentId === 1 ? 0.95 : 1.08
+}
+
+function isLuxuryHotel(hotel) {
+  return Number(hotel.stars) >= 5 &&
+         Number(hotel.rating) >= 4.5
+}
+
 function mapHotelFromApi(hotel, index, searchParams) {
   const nights = calcNights(searchParams.fromDate, searchParams.toDate)
   const normalizedDestination = normalizeDestination(searchParams.destination)
@@ -264,13 +276,17 @@ function mapHotelFromApi(hotel, index, searchParams) {
     ) || 0
   )
 
-  return {
+  const priceMultiplier = getTenantPriceMultiplier()
+  const adjustedNightlyPrice = Math.round(nightlyPrice * priceMultiplier)
+  const adjustedTotalPrice = Math.round((totalPrice ?? nightlyPrice * nights) * priceMultiplier)
+
+  const mappedHotel = {
     id: String(hotel.hotel_id ?? hotel.id ?? `HT-${index}`),
     name: hotel.hotel_name || hotel.hotel_name_trans || 'Hotel',
     location: normalizedDestination,
     stars: Math.max(1, Math.min(5, Math.round(Number(hotel.class) || 3))),
-    pricePerNight: nightlyPrice,
-    totalPrice: Math.round(totalPrice ?? nightlyPrice * nights),
+    pricePerNight: adjustedNightlyPrice,
+    totalPrice: adjustedTotalPrice,
     nights,
     checkIn: searchParams.fromDate,
     checkOut: searchParams.toDate,
@@ -281,6 +297,12 @@ function mapHotelFromApi(hotel, index, searchParams) {
     imageIndex: index % 5,
     imageUrl: hotel.max_photo_url || hotel.main_photo_url || null,
   }
+
+  return {
+    ...mappedHotel,
+    isLuxury: isLuxuryHotel(mappedHotel),
+    luxuryLabel: 'Luxury Resort',
+  }
 }
 
 async function searchHotelsViaApi(searchParams) {
@@ -288,7 +310,7 @@ async function searchHotelsViaApi(searchParams) {
     throw new Error('VITE_HOTEL_API_BASE_URL is not configured.')
   }
 
-  const { dest_name, country_name } = getApiDestination(searchParams.destination)
+  const {dest_name, country_name} = getApiDestination(searchParams.destination)
   let response
 
   try {
@@ -322,11 +344,11 @@ async function searchHotelsViaApi(searchParams) {
   }
 
   return extractHotelItems(response.data)
-    .map((hotel, index) => mapHotelFromApi(hotel, index, searchParams))
-    .filter((hotel) => hotel.pricePerNight > 0)
-    .sort((left, right) => left.pricePerNight - right.pricePerNight)
+      .map((hotel, index) => mapHotelFromApi(hotel, index, searchParams))
+      .filter((hotel) => hotel.pricePerNight > 0)
+      .filter((hotel) => hotel.isLuxury)
+      .sort((left, right) => left.pricePerNight - right.pricePerNight)
 }
-
 export const hotelService = {
   async search({ destination, fromDate, toDate, adults, children }) {
     const searchParams = { destination, fromDate, toDate, adults, children }

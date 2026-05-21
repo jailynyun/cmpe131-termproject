@@ -35,7 +35,7 @@ const palettes = [
 
     <div v-else-if="hotels.length === 0" class="state-message">
       <span class="state-icon">🏨</span>
-      <p>No hotels found. Try adjusting your dates.</p>
+      <p>No luxury resorts found. Try different dates.</p>
     </div>
 
     <div
@@ -56,7 +56,12 @@ const palettes = [
       <div class="hotel-card__body">
         <div class="hotel-card__top">
           <div>
-            <div class="hotel-name">{{ hotel.name }}</div>
+            <div class="hotel-name">
+              {{ hotel.name }}
+              <span v-if="hotel.isLuxury" class="luxury-badge">
+                ⭐ Luxury Resort
+              </span>
+            </div>
             <div class="hotel-location">📍 {{ hotel.location }}</div>
             <div class="hotel-stars">
               <span class="stars">{{ renderStars(hotel.stars) }}</span>
@@ -198,6 +203,17 @@ const palettes = [
 .rating-badge {
   font-size: 0.72rem;
   color: var(--color-text-muted);
+}
+
+.luxury-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 0.68rem;
+  font-weight: 700;
 }
 
 .hotel-price-block {
