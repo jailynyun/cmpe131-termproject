@@ -100,14 +100,44 @@ def _ensure_airline_exists(
         },
     )
 
-
-def _validate_airport_code(db: Session, airport_code: str, field_name: str) -> None:
-    if not _exists(
+def _ensure_airport_exists(
+    db: Session,
+    airport_code: str,
+    airport_name: str | None = None,
+    city: str | None = None,
+    country: str | None = None,
+) -> None:
+    exists = _exists(
         db,
         "SELECT 1 FROM Airport_Master WHERE Airport_Code = :airport_code LIMIT 1",
         {"airport_code": airport_code},
-    ):
-        raise HTTPException(status_code=400, detail=f"{field_name} '{airport_code}' does not exist in Airport_Master.")
+    )
+
+    if exists:
+        return
+
+    db.execute(
+        text("""
+            INSERT INTO Airport_Master (
+                Airport_Code,
+                Airport_Name,
+                City,
+                Country
+            )
+            VALUES (
+                :airport_code,
+                :airport_name,
+                :city,
+                :country
+            )
+        """),
+        {
+            "airport_code": airport_code,
+            "airport_name": airport_name or f"Airport {airport_code}",
+            "city": city or "Unknown",
+            "country": country or "Unknown",
+        },
+    )
 
 # ==========================================
 # BOOKING ENDPOINTS (CRUD)
@@ -250,8 +280,15 @@ def create_booking(booking: BookingCreate, db: Session = Depends(get_db)):
             db,
             flight.Airline_Code,
         )
-        _validate_airport_code(db, flight.Origin_Airport_Code, "Origin_Airport_Code")
-        _validate_airport_code(db, flight.Destination_Airport_Code, "Destination_Airport_Code")
+        _ensure_airport_exists(
+            db,
+            flight.Origin_Airport_Code,
+        )
+
+        _ensure_airport_exists(
+            db,
+            flight.Destination_Airport_Code,
+        )
         db.add(
             FlightReservation(
                 Booking_Id=db_booking.Booking_Id,
@@ -449,9 +486,16 @@ def update_flight_reservation(
             update_data["Airline_Code"],
         )
     if "Origin_Airport_Code" in update_data:
-        _validate_airport_code(db, update_data["Origin_Airport_Code"], "Origin_Airport_Code")
+        _ensure_airport_exists(
+            db,
+            update_data["Origin_Airport_Code"],
+        )
+
     if "Destination_Airport_Code" in update_data:
-        _validate_airport_code(db, update_data["Destination_Airport_Code"], "Destination_Airport_Code")
+        _ensure_airport_exists(
+            db,
+            update_data["Destination_Airport_Code"],
+        )
 
     for key, value in update_data.items():
         setattr(db_reservation, key, value)
